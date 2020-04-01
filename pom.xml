@@ -178,7 +178,7 @@
     </plugins>
   </build>
 
-  <url>https://github.com/Yleisradio/aws-maven</url>
+  <url>https://github.com/2iq/aws-maven</url>
 
   <inceptionYear>2016</inceptionYear>
 
@@ -191,18 +191,19 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/Yleisradio/aws-maven.git</connection>
-    <url>https://github.com/Yleisradio/aws-maven</url>
+    <connection>scm:git:git://github.com/2iq/aws-maven.git</connection>
+    <developerConnection>scm:git:ssh://github.com:2iq/aws-maven.git</developerConnection>
+    <url>http://github.com/2iq/aws-maven/tree/master</url>
   </scm>
 
   <organization>
-    <name>Yleisradio Oy</name>
-    <url>http://yle.fi</url>
+    <name>2iQ Research GmbH</name>
+    <url>https://www.2iqresearch.com</url>
   </organization>
 
   <issueManagement>
     <system>Github</system>
-    <url>https://github.com/Yleisradio/aws-maven/issues</url>
+    <url>https://github.com/2iq/aws-maven/issues</url>
   </issueManagement>
 
 </project>
