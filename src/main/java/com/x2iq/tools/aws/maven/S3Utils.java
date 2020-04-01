@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fi.yle.tools.aws.maven;
+package com.x2iq.tools.aws.maven;
 
 import com.amazonaws.ClientConfiguration;
 import org.apache.maven.wagon.proxy.ProxyInfo;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fi.yle.tools.aws.maven.matchers;
+package com.x2iq.tools.aws.maven.matchers;
 
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import org.apache.maven.wagon.events.SessionEvent;

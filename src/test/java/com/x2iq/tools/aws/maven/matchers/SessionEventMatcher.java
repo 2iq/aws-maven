@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fi.yle.tools.aws.maven.matchers;
+package com.x2iq.tools.aws.maven.matchers;
 
 import org.apache.maven.wagon.events.SessionEvent;
 import org.hamcrest.BaseMatcher;

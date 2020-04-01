@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fi.yle.tools.aws.maven;
+package com.x2iq.tools.aws.maven;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -99,7 +99,7 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
                 this.amazonS3 = new AmazonS3Client(credentialsProvider, clientConfiguration);
             }
 
-            fi.yle.tools.aws.maven.Region region = fi.yle.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
+            com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
             this.amazonS3.setEndpoint(region.getEndpoint());
         }
     }

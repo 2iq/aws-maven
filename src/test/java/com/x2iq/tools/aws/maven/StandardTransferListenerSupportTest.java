@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fi.yle.tools.aws.maven;
+package com.x2iq.tools.aws.maven;
 
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.events.TransferEvent;
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static fi.yle.tools.aws.maven.matchers.Matchers.eq;
+import static com.x2iq.tools.aws.maven.matchers.Matchers.eq;
 
 public final class StandardTransferListenerSupportTest {
 

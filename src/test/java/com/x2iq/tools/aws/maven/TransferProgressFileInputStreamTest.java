@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fi.yle.tools.aws.maven;
+package com.x2iq.tools.aws.maven;
 
 import org.junit.After;
 import org.junit.Test;
