@@ -176,6 +176,27 @@
         <version>2.2</version>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.itemis.maven.plugins</groupId>
+          <artifactId>unleash-maven-plugin</artifactId>
+          <version>2.10.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.itemis.maven.plugins</groupId>
+              <artifactId>unleash-scm-provider-git</artifactId>
+              <version>2.3.0</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <profiles>
+              <profile>release-profile</profile>
+            </profiles>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <url>https://github.com/2iq/aws-maven</url>
