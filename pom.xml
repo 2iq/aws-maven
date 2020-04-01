@@ -206,4 +206,13 @@
     <url>https://github.com/2iq/aws-maven/issues</url>
   </issueManagement>
 
+  <developers>
+    <developer>
+      <name>Walery Strauch</name>
+      <email>walery@2iqresearch.com</email>
+      <organization>2iQ Research GmbH</organization>
+      <organizationUrl>https://www.2iqresearch.com</organizationUrl>
+    </developer>
+  </developers>
+
 </project>
