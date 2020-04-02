@@ -1,6 +1,7 @@
 # AWS Maven Wagon
 
-This project is a fork from [https://github.com/spring-projects/aws-maven](https://github.com/spring-projects/aws-maven) to support development and operations at Finnish Brodcasting Company ( YLE ).
+This project is a fork from [https://github.com/Yleisradio/aws-maven](https://github.com/Yleisradio/aws-maven).
+Reason for forking was to bring this project to maven central and solve [Yleisradio/aws-maven/issues/8](https://github.com/Yleisradio/aws-maven/issues/8).
 No guarantees are made for support or updating the component, but as long as we are using it actively we will update it as we need it.
 
 Wagon also works with Leiningen out of the box.
@@ -8,8 +9,6 @@ Wagon also works with Leiningen out of the box.
 Add following to your `project.clj`
 
     :plugins [[com.x2iq.tools/aws-maven "1.4.2"]]
-    :plugin-repositories [["yle-repo" {:url       "https://maven.yle.fi/release"
-                                       :snapshots false}]]
 
 Latest version is 1.4.2 and it uses AWS SDK version 1.11.495
 
@@ -21,23 +20,9 @@ mvn deploy
 
 ## Usage
 To publish Maven artifacts to S3 a build extension must be defined in a project's `pom.xml`.
-The latest version of the wagon can be found from from YLE public mvn repository https://maven.yle.fi/release
+The latest version of the wagon can be found in maven central repository.
 
-To get the dependency add to your pom:
-
-
-```xml
-<pluginRepositories>
-    <pluginRepository>
-      <id>yle-public</id>
-      <name>Yle public repository</name>
-      <url>https://maven.yle.fi/release</url>
-      <layout>default</layout>
-    </pluginRepository>
-</pluginRepositories>
-```
-
-And plugin dependency:
+To get the wagon add extension to your pom:
 
 ```xml
 <project>
