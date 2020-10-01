@@ -404,11 +404,6 @@ public final class AbstractWagonTest {
     }
 
     @Test
-    public void openConnection() {
-        this.wagon.openConnection();
-    }
-
-    @Test
     public void put() throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
         this.wagon.put(new File("foo"), "bar");
 

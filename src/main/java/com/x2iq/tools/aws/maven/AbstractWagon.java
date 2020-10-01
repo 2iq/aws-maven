@@ -212,6 +212,7 @@ abstract class AbstractWagon implements Wagon {
     }
 
     @Override
+    @Deprecated
     public final void openConnection() {
         // Nothing to do here (never called by the wagon manager)
     }
