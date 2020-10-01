@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -292,9 +292,9 @@ public final class AbstractWagonTest {
 
     @Test
     public void getFileList() throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException {
-        when(this.wagon.listDirectory("foo")).thenReturn(Arrays.<String>asList());
+        when(this.wagon.listDirectory("foo")).thenReturn(Collections.<String>emptyList());
 
-        assertEquals(Arrays.<String>asList(), this.wagon.getFileList("foo"));
+        assertEquals(Collections.emptyList(), this.wagon.getFileList("foo"));
     }
 
     @Test
