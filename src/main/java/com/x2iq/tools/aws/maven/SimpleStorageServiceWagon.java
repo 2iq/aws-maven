@@ -18,14 +18,14 @@ package com.x2iq.tools.aws.maven;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.*;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
-import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
-import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.TransferFailedException;
 import org.apache.maven.wagon.authentication.AuthenticationException;
@@ -93,10 +93,18 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
             this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
             if (isAssumedRoleRequested()) {
-                this.amazonS3 = new AmazonS3Client(
-                        getAssumedCredentialsIfRequested(credentialsProvider), clientConfiguration);
+                this.amazonS3 = AmazonS3ClientBuilder
+                        .standard()
+                        .withCredentials(getAssumedCredentialsIfRequested(credentialsProvider))
+                        .withClientConfiguration(clientConfiguration)
+                        .build();
+
             } else {
-                this.amazonS3 = new AmazonS3Client(credentialsProvider, clientConfiguration);
+                this.amazonS3 = AmazonS3ClientBuilder
+                        .standard()
+                        .withCredentials(credentialsProvider)
+                        .withClientConfiguration(clientConfiguration)
+                        .build();
             }
 
             com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
@@ -104,27 +112,17 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         }
     }
 
-    protected BasicSessionCredentials getAssumedCredentialsIfRequested(AuthenticationInfoAWSCredentialsProviderChain credentials) {
-
-        AWSSecurityTokenServiceClient stsClient = new
-                AWSSecurityTokenServiceClient(credentials);
+    protected AWSCredentialsProvider getAssumedCredentialsIfRequested(AuthenticationInfoAWSCredentialsProviderChain credentials) {
+        AWSSecurityTokenService sts = AWSSecurityTokenServiceClientBuilder.standard()
+                .withCredentials(credentials)
+                .build();
 
         String ARN = getAssumedRoleARN();
         String SESSION = getAssumedRoleSessionName();
 
-        AssumeRoleRequest assumeRequest = new AssumeRoleRequest()
-                .withRoleArn(ARN)
-                .withRoleSessionName(SESSION);
-
-        AssumeRoleResult assumeResult = stsClient.assumeRole(assumeRequest);
-
-        BasicSessionCredentials assumedCredentials =
-                new BasicSessionCredentials(
-                        assumeResult.getCredentials().getAccessKeyId(),
-                        assumeResult.getCredentials().getSecretAccessKey(),
-                        assumeResult.getCredentials().getSessionToken());
-
-        return assumedCredentials;
+        return new STSAssumeRoleSessionCredentialsProvider.Builder(ARN, SESSION)
+                .withStsClient(sts)
+                .build();
     }
 
     protected String getAssumedRoleVariableFromConfigFile(String key) {
