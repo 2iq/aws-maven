@@ -84,7 +84,10 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
     @Override
     protected void connectToRepository(Repository repository, AuthenticationInfo authenticationInfo,
                                        ProxyInfoProvider proxyInfoProvider) throws AuthenticationException {
-        if (this.amazonS3 == null) {
+        if (this.amazonS3 != null) {
+            return;
+        }
+
             AuthenticationInfoAWSCredentialsProviderChain credentialsProvider =
                     new AuthenticationInfoAWSCredentialsProviderChain(authenticationInfo);
             ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
@@ -109,7 +112,6 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
 
             com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
             this.amazonS3.setEndpoint(region.getEndpoint());
-        }
     }
 
     protected AWSCredentialsProvider getAssumedCredentialsIfRequested(AuthenticationInfoAWSCredentialsProviderChain credentials) {
