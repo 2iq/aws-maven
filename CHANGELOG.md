@@ -1,3 +1,24 @@
+# 1.4.5 (01.10.2020)
+
+**Notes:**
+
+This is maintenance release only.
+There are no new features or any logical changes.
+Main reason was to remove warnings and possible incompatibilities that appears while using this extension with java version >=9.
+
+**Changes:**
+
+- Improvement and polishing of README file
+- Remove all usage of deprecated API
+- Bump jaxb dependencies
+- Bump mockito [1.9.5 -> 3.5.13] and fix related API changes
+- Bump aws-sdk [1.11.495 -> 1.11.873]
+- Bump wagon-provider-api [2.6 -> 3.4.0]
+- Bump slf4j [1.7.6 -> 1.7.30]
+- Bump junit [4.11 -> 4.13]
+- Remove exclusions on dependencies in pom that are not existent (anymore)
+- Adjust configuration of maven-javadoc-plugin to be able to deploy with java version >=9.
+
 # Release 1.4.4: Fix artifacts on maven central
 
 **Notes:**
