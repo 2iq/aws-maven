@@ -103,6 +103,15 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         this.amazonS3.setEndpoint(region.getEndpoint());
     }
 
+    private String getRegionForBucket(AWSCredentialsProvider credentials, ClientConfiguration clientConfiguration) {
+        return AmazonS3ClientBuilder
+            .standard()
+            .withCredentials(credentials)
+            .withClientConfiguration(clientConfiguration)
+            .build()
+            .getBucketLocation(this.bucketName);
+    }
+
     protected AWSCredentialsProvider getCredentials(AuthenticationInfo authenticationInfo) {
         AWSCredentialsProvider credentials =
             new AuthenticationInfoAWSCredentialsProviderChain(authenticationInfo);
