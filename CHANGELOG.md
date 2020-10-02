@@ -1,3 +1,9 @@
+# 1.4.6 (02.10.2020)
+
+**Changes:**
+
+- Fix `Client is immutable when created with the builder` error
+
 # 1.4.5 (01.10.2020)
 
 **Notes:**
