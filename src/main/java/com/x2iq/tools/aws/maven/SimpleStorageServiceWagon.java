@@ -88,30 +88,30 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
             return;
         }
 
-            AuthenticationInfoAWSCredentialsProviderChain credentialsProvider =
-                    new AuthenticationInfoAWSCredentialsProviderChain(authenticationInfo);
-            ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
+        AuthenticationInfoAWSCredentialsProviderChain credentialsProvider =
+                new AuthenticationInfoAWSCredentialsProviderChain(authenticationInfo);
+        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
 
-            this.bucketName = S3Utils.getBucketName(repository);
-            this.baseDirectory = S3Utils.getBaseDirectory(repository);
+        this.bucketName = S3Utils.getBucketName(repository);
+        this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
-            if (isAssumedRoleRequested()) {
-                this.amazonS3 = AmazonS3ClientBuilder
-                        .standard()
-                        .withCredentials(getAssumedCredentialsIfRequested(credentialsProvider))
-                        .withClientConfiguration(clientConfiguration)
-                        .build();
+        if (isAssumedRoleRequested()) {
+            this.amazonS3 = AmazonS3ClientBuilder
+                    .standard()
+                    .withCredentials(getAssumedCredentialsIfRequested(credentialsProvider))
+                    .withClientConfiguration(clientConfiguration)
+                    .build();
 
-            } else {
-                this.amazonS3 = AmazonS3ClientBuilder
-                        .standard()
-                        .withCredentials(credentialsProvider)
-                        .withClientConfiguration(clientConfiguration)
-                        .build();
-            }
+        } else {
+            this.amazonS3 = AmazonS3ClientBuilder
+                    .standard()
+                    .withCredentials(credentialsProvider)
+                    .withClientConfiguration(clientConfiguration)
+                    .build();
+        }
 
-            com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
-            this.amazonS3.setEndpoint(region.getEndpoint());
+        com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
+        this.amazonS3.setEndpoint(region.getEndpoint());
     }
 
     protected AWSCredentialsProvider getAssumedCredentialsIfRequested(AuthenticationInfoAWSCredentialsProviderChain credentials) {
