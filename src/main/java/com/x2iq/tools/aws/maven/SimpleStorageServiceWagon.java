@@ -92,15 +92,14 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
 
         AWSCredentialsProvider credentials = getCredentials(authenticationInfo);
         ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
+        String region = getRegionForBucket(credentials, clientConfiguration);
 
         this.amazonS3 = AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(credentials)
                 .withClientConfiguration(clientConfiguration)
+                .withRegion(region)
                 .build();
-
-        com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
-        this.amazonS3.setEndpoint(region.getEndpoint());
     }
 
     private String getRegionForBucket(AWSCredentialsProvider credentials, ClientConfiguration clientConfiguration) {
