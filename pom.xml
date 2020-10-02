@@ -5,7 +5,7 @@
   <groupId>com.x2iq.tools</groupId>
   <artifactId>aws-maven</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.6-SNAPSHOT</version>
+  <version>1.4.6</version>
   <name>Amazon Web Services S3 Maven Wagon Support</name>
   <description>Standard Maven wagon support for s3:// urls and IAM roles</description>
 
@@ -182,7 +182,7 @@
     <connection>scm:git:git://github.com/2iq/aws-maven.git</connection>
     <developerConnection>scm:git:ssh://github.com:2iq/aws-maven.git</developerConnection>
     <url>http://github.com/2iq/aws-maven/tree/master</url>
-    <tag>HEAD</tag>
+    <tag>1.4.6</tag>
   </scm>
 
   <organization>
