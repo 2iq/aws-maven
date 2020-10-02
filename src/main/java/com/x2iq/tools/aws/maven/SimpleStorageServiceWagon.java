@@ -94,20 +94,11 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         this.bucketName = S3Utils.getBucketName(repository);
         this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
-        if (isAssumedRoleRequested()) {
-            this.amazonS3 = AmazonS3ClientBuilder
-                    .standard()
-                    .withCredentials(credentials)
-                    .withClientConfiguration(clientConfiguration)
-                    .build();
-
-        } else {
-            this.amazonS3 = AmazonS3ClientBuilder
-                    .standard()
-                    .withCredentials(credentials)
-                    .withClientConfiguration(clientConfiguration)
-                    .build();
-        }
+        this.amazonS3 = AmazonS3ClientBuilder
+                .standard()
+                .withCredentials(credentials)
+                .withClientConfiguration(clientConfiguration)
+                .build();
 
         com.x2iq.tools.aws.maven.Region region = com.x2iq.tools.aws.maven.Region.fromLocationConstraint(this.amazonS3.getBucketLocation(this.bucketName));
         this.amazonS3.setEndpoint(region.getEndpoint());
@@ -121,19 +112,6 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
             return credentials;
         }
 
-        AWSSecurityTokenService sts = AWSSecurityTokenServiceClientBuilder.standard()
-                .withCredentials(credentials)
-                .build();
-
-        String ARN = getAssumedRoleARN();
-        String SESSION = getAssumedRoleSessionName();
-
-        return new STSAssumeRoleSessionCredentialsProvider.Builder(ARN, SESSION)
-                .withStsClient(sts)
-                .build();
-    }
-
-    protected AWSCredentialsProvider getAssumedCredentialsIfRequested(AuthenticationInfoAWSCredentialsProviderChain credentials) {
         AWSSecurityTokenService sts = AWSSecurityTokenServiceClientBuilder.standard()
                 .withCredentials(credentials)
                 .build();
