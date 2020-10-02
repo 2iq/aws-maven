@@ -87,12 +87,11 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         if (this.amazonS3 != null) {
             return;
         }
+        this.bucketName = S3Utils.getBucketName(repository);
+        this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
         AWSCredentialsProvider credentials = getCredentials(authenticationInfo);
         ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
-
-        this.bucketName = S3Utils.getBucketName(repository);
-        this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
         this.amazonS3 = AmazonS3ClientBuilder
                 .standard()
