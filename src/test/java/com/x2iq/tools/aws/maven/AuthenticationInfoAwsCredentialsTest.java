@@ -33,13 +33,13 @@ public final class AuthenticationInfoAwsCredentialsTest {
     @Test
     public void getAWSAccessKeyId() {
         when(this.authenticationInfo.getUserName()).thenReturn("foo");
-        assertEquals("foo", this.awsCredentials.getAWSAccessKeyId());
+        assertEquals("foo", this.awsCredentials.accessKeyId());
     }
 
     @Test
     public void getAWSSecretKey() {
         when(this.authenticationInfo.getPassword()).thenReturn("foo");
-        assertEquals("foo", this.awsCredentials.getAWSSecretKey());
+        assertEquals("foo", this.awsCredentials.secretAccessKey());
     }
 
 }

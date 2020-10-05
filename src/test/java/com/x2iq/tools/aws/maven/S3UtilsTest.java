@@ -16,11 +16,11 @@
 
 package com.x2iq.tools.aws.maven;
 
-import com.amazonaws.ClientConfiguration;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
 import org.junit.Test;
+import software.amazon.awssdk.http.apache.ProxyConfiguration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -56,23 +56,23 @@ public final class S3UtilsTest {
         when(this.proxyInfo.getHost()).thenReturn("foo");
         when(this.proxyInfo.getPort()).thenReturn(PORT);
 
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(this.proxyInfoProvider);
-        assertEquals("foo", clientConfiguration.getProxyHost());
-        assertEquals(100, clientConfiguration.getProxyPort());
+        ProxyConfiguration clientConfiguration = S3Utils.getProxyConfiguration(this.proxyInfoProvider);
+        assertEquals("foo", clientConfiguration.host());
+        assertEquals(100, clientConfiguration.port());
     }
 
     @Test
     public void getClientConfigurationNoProxyInfoProvider() {
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(null);
-        assertNull(clientConfiguration.getProxyHost());
-        assertEquals(-1, clientConfiguration.getProxyPort());
+        ProxyConfiguration clientConfiguration = S3Utils.getProxyConfiguration(null);
+        assertNull(clientConfiguration.host());
+        assertEquals(0, clientConfiguration.port());
     }
 
     @Test
     public void getClientConfigurationNoProxyInfo() {
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(this.proxyInfoProvider);
-        assertNull(clientConfiguration.getProxyHost());
-        assertEquals(-1, clientConfiguration.getProxyPort());
+        ProxyConfiguration clientConfiguration = S3Utils.getProxyConfiguration(this.proxyInfoProvider);
+        assertNull(clientConfiguration.host());
+        assertEquals(0, clientConfiguration.port());
     }
 
     private Repository createRepository(String path) {
