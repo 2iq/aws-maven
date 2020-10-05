@@ -12,6 +12,10 @@ Add following to your `project.clj`
 
 Latest version is 1.4.6 and it uses AWS SDK version 1.11.873
 
+## Minimal requirements
+
+To use this extension you need at least java version 8.
+
 ## Building and deploying this wagon
 
 mvn install
