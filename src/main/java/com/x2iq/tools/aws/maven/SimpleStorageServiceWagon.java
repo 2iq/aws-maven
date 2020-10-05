@@ -74,13 +74,6 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         super(true);
     }
 
-    SimpleStorageServiceWagon(AmazonS3 amazonS3, String bucketName, String baseDirectory) {
-        super(true);
-        this.amazonS3 = amazonS3;
-        this.bucketName = bucketName;
-        this.baseDirectory = baseDirectory;
-    }
-
     @Override
     protected void connectToRepository(Repository repository, AuthenticationInfo authenticationInfo,
                                        ProxyInfoProvider proxyInfoProvider) throws AuthenticationException {
