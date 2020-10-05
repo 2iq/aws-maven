@@ -16,11 +16,11 @@
 
 package com.x2iq.tools.aws.maven;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
-final class AuthenticationInfoAWSCredentialsProvider implements AWSCredentialsProvider {
+final class AuthenticationInfoAWSCredentialsProvider implements AwsCredentialsProvider {
 
     private final AuthenticationInfo authenticationInfo;
 
@@ -29,12 +29,7 @@ final class AuthenticationInfoAWSCredentialsProvider implements AWSCredentialsPr
     }
 
     @Override
-    public AWSCredentials getCredentials() {
+    public AwsCredentials resolveCredentials() {
         return this.authenticationInfo != null ? new AuthenticationInfoAWSCredentials(this.authenticationInfo) : null;
     }
-
-    @Override
-    public void refresh() {
-    }
-
 }

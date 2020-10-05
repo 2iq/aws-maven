@@ -16,27 +16,36 @@
 
 package com.x2iq.tools.aws.maven;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.internal.Mimetypes;
-import com.amazonaws.services.s3.model.*;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.TransferFailedException;
 import org.apache.maven.wagon.authentication.AuthenticationException;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CommonPrefix;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static software.amazon.awssdk.services.s3.model.ObjectCannedACL.BUCKET_OWNER_FULL_CONTROL;
 
 /**
  * An implementation of the Maven Wagon interface that allows you to access the Amazon S3 service. URLs that reference
@@ -61,7 +70,7 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
 
     private static final String s3DefaultConfigPath = ".s3_config";
 
-    private volatile AmazonS3 amazonS3;
+    private volatile S3Client s3;
 
     private volatile String bucketName;
 
@@ -77,51 +86,57 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
     @Override
     protected void connectToRepository(Repository repository, AuthenticationInfo authenticationInfo,
                                        ProxyInfoProvider proxyInfoProvider) throws AuthenticationException {
-        if (this.amazonS3 != null) {
+        if (this.s3 != null) {
             return;
         }
         this.bucketName = S3Utils.getBucketName(repository);
         this.baseDirectory = S3Utils.getBaseDirectory(repository);
 
-        AWSCredentialsProvider credentials = getCredentials(authenticationInfo);
-        ClientConfiguration clientConfiguration = S3Utils.getClientConfiguration(proxyInfoProvider);
-        String region = getRegionForBucket(credentials, clientConfiguration);
+        AwsCredentialsProvider credentials = getCredentials(authenticationInfo);
+        SdkHttpClient httpClient = S3Utils.getSdkHttpClient(proxyInfoProvider);
+        Region region = getRegionForBucket(credentials, httpClient);
 
-        this.amazonS3 = AmazonS3ClientBuilder
-                .standard()
-                .withCredentials(credentials)
-                .withClientConfiguration(clientConfiguration)
-                .withRegion(region)
-                .build();
+        this.s3 = S3Client.builder()
+            .credentialsProvider(credentials)
+            .httpClient(httpClient)
+            .region(region)
+            .build();
     }
 
-    private String getRegionForBucket(AWSCredentialsProvider credentials, ClientConfiguration clientConfiguration) {
-        return AmazonS3ClientBuilder
-            .standard()
-            .withCredentials(credentials)
-            .withClientConfiguration(clientConfiguration)
+    private Region getRegionForBucket(AwsCredentialsProvider credentials, SdkHttpClient httpClient) {
+        String region = S3Client.builder()
+            .credentialsProvider(credentials)
+            .httpClient(httpClient)
             .build()
-            .getBucketLocation(this.bucketName);
+            .getBucketLocation(builder -> builder.bucket(this.bucketName))
+            .locationConstraintAsString();
+
+        return Region.of(region);
     }
 
-    protected AWSCredentialsProvider getCredentials(AuthenticationInfo authenticationInfo) {
-        AWSCredentialsProvider credentials =
-            new AuthenticationInfoAWSCredentialsProviderChain(authenticationInfo);
+    protected AwsCredentialsProvider getCredentials(AuthenticationInfo authenticationInfo) {
+        AwsCredentialsProvider credentials = AwsCredentialsProviderChain.of(
+            DefaultCredentialsProvider.create(),
+            new AuthenticationInfoAWSCredentialsProvider(authenticationInfo)
+        );
 
         if (!isAssumedRoleRequested()) {
             return credentials;
         }
 
-        AWSSecurityTokenService sts = AWSSecurityTokenServiceClientBuilder.standard()
-                .withCredentials(credentials)
-                .build();
+        StsClient sts = StsClient.builder()
+            .credentialsProvider(credentials)
+            .build();
 
         String ARN = getAssumedRoleARN();
         String SESSION = getAssumedRoleSessionName();
 
-        return new STSAssumeRoleSessionCredentialsProvider.Builder(ARN, SESSION)
-                .withStsClient(sts)
-                .build();
+        return StsAssumeRoleCredentialsProvider.builder()
+            .stsClient(sts)
+            .refreshRequest(builder -> builder
+                .roleArn(ARN)
+                .roleSessionName(SESSION))
+            .build();
     }
 
     protected String getAssumedRoleVariableFromConfigFile(String key) {
@@ -163,7 +178,8 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
 
     @Override
     protected void disconnectFromRepository() {
-        this.amazonS3 = null;
+        this.s3.close();
+        this.s3 = null;
         this.bucketName = null;
         this.baseDirectory = null;
     }
@@ -171,9 +187,9 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
     @Override
     protected boolean doesRemoteResourceExist(String resourceName) {
         try {
-            getObjectMetadata(resourceName);
+            headS3Object(resourceName);
             return true;
-        } catch (AmazonServiceException e) {
+        } catch (NoSuchKeyException e) {
             return false;
         }
     }
@@ -181,40 +197,24 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
     @Override
     protected boolean isRemoteResourceNewer(String resourceName, long timestamp) throws ResourceDoesNotExistException {
         try {
-            Date lastModified = getObjectMetadata(resourceName).getLastModified();
-            return lastModified == null || lastModified.getTime() > timestamp;
-        } catch (AmazonServiceException e) {
+            Instant lastModified = headS3Object(resourceName).lastModified();
+            return lastModified == null || lastModified.toEpochMilli() > timestamp;
+        } catch (NoSuchKeyException e) {
             throw new ResourceDoesNotExistException(String.format("'%s' does not exist", resourceName), e);
         }
     }
 
     @Override
     protected List<String> listDirectory(String directory) throws ResourceDoesNotExistException {
-        List<String> directoryContents = new ArrayList<>();
+        String prefix = getKey(directory);
+        Pattern pattern = Pattern.compile(String.format(RESOURCE_FORMAT, prefix));
 
-        try {
-            String prefix = getKey(directory);
-            Pattern pattern = Pattern.compile(String.format(RESOURCE_FORMAT, prefix));
+        ListObjectsV2Iterable response = this.s3.listObjectsV2Paginator(builder -> builder
+            .bucket(this.bucketName)
+            .prefix(prefix)
+            .delimiter("/"));
 
-            ListObjectsRequest listObjectsRequest = new ListObjectsRequest() //
-                    .withBucketName(this.bucketName) //
-                    .withPrefix(prefix) //
-                    .withDelimiter("/");
-
-            ObjectListing objectListing;
-
-            objectListing = this.amazonS3.listObjects(listObjectsRequest);
-            directoryContents.addAll(getResourceNames(objectListing, pattern));
-
-            while (objectListing.isTruncated()) {
-                objectListing = this.amazonS3.listObjects(listObjectsRequest);
-                directoryContents.addAll(getResourceNames(objectListing, pattern));
-            }
-
-            return directoryContents;
-        } catch (AmazonServiceException e) {
-            throw new ResourceDoesNotExistException(String.format("'%s' does not exist", directory), e);
-        }
+        return new ArrayList<>(getResourceNames(response, pattern));
     }
 
     @Override
@@ -223,13 +223,13 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         InputStream in = null;
         OutputStream out = null;
         try {
-            S3Object s3Object = this.amazonS3.getObject(this.bucketName, getKey(resourceName));
-
-            in = s3Object.getObjectContent();
+            in = this.s3.getObject(builder -> builder
+                .bucket(this.bucketName)
+                .key(resourceName));
             out = new TransferProgressFileOutputStream(destination, transferProgress);
 
             IoUtils.copy(in, out);
-        } catch (AmazonServiceException e) {
+        } catch (AwsServiceException e) {
             throw new ResourceDoesNotExistException(String.format("'%s' does not exist", resourceName), e);
         } catch (FileNotFoundException e) {
             throw new TransferFailedException(String.format("Cannot write file to '%s'", destination), e);
@@ -249,14 +249,15 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
 
         InputStream in = null;
         try {
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(source.length());
-            objectMetadata.setContentType(Mimetypes.getInstance().getMimetype(source));
-
             in = new TransferProgressFileInputStream(source, transferProgress);
 
-            this.amazonS3.putObject(new PutObjectRequest(this.bucketName, key, in, objectMetadata).withCannedAcl(CannedAccessControlList.BucketOwnerFullControl));
-        } catch (AmazonServiceException e) {
+            this.s3.putObject(builder -> builder
+                    .bucket(this.bucketName)
+                    .key(key)
+                    .acl(BUCKET_OWNER_FULL_CONTROL),
+                RequestBody.fromInputStream(in, source.length()));
+
+        } catch (AwsServiceException e) {
             throw new TransferFailedException(String.format("Cannot write file to '%s'", destination), e);
         } catch (FileNotFoundException e) {
             throw new ResourceDoesNotExistException(String.format("Cannot read file from '%s'", source), e);
@@ -265,26 +266,26 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         }
     }
 
-    private ObjectMetadata getObjectMetadata(String resourceName) {
-        return this.amazonS3.getObjectMetadata(this.bucketName, getKey(resourceName));
+    private HeadObjectResponse headS3Object(String resourceName) {
+        return this.s3.headObject(builder -> builder
+            .bucket(this.bucketName)
+            .key(getKey(resourceName)));
     }
 
     private String getKey(String resourceName) {
         return String.format(KEY_FORMAT, this.baseDirectory, resourceName);
     }
 
-    private List<String> getResourceNames(ObjectListing objectListing, Pattern pattern) {
-        List<String> resourceNames = new ArrayList<>();
+    private List<String> getResourceNames(ListObjectsV2Iterable objectListing, Pattern pattern) {
+        Stream<String> directoryStream = objectListing.commonPrefixes().stream()
+            .map(CommonPrefix::prefix);
 
-        for (String commonPrefix : objectListing.getCommonPrefixes()) {
-            resourceNames.add(getResourceName(commonPrefix, pattern));
-        }
+        Stream<String> objectsStream = objectListing.contents().stream()
+            .map(software.amazon.awssdk.services.s3.model.S3Object::key);
 
-        for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
-            resourceNames.add(getResourceName(s3ObjectSummary.getKey(), pattern));
-        }
-
-        return resourceNames;
+        return Stream.concat(directoryStream, objectsStream)
+            .map((String key) -> getResourceName(key, pattern))
+            .collect(Collectors.toList());
     }
 
     private String getResourceName(String key, Pattern pattern) {
@@ -300,26 +301,18 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
 
         if (directoryIndex != 0) {
             String directory = path.substring(0, directoryIndex);
-            PutObjectRequest putObjectRequest = createDirectoryPutObjectRequest(directory);
 
             try {
-                this.amazonS3.putObject(putObjectRequest);
-            } catch (AmazonServiceException e) {
+                this.s3.putObject(builder -> builder
+                        .bucket(this.bucketName)
+                        .key(directory)
+                        .acl(BUCKET_OWNER_FULL_CONTROL),
+                    RequestBody.empty());
+            } catch (AwsServiceException e) {
                 throw new TransferFailedException(String.format("Cannot write directory '%s'", directory), e);
             }
 
             mkdirs(path, directoryIndex);
         }
     }
-
-    private PutObjectRequest createDirectoryPutObjectRequest(String key) {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[0]);
-
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(0);
-
-        return new PutObjectRequest(this.bucketName, key, inputStream, objectMetadata)
-            .withCannedAcl(CannedAccessControlList.BucketOwnerFullControl);
-    }
-
 }

@@ -10,7 +10,7 @@
   <description>Standard Maven wagon support for s3:// urls and IAM roles</description>
 
   <properties>
-    <amazonaws.version>1.11.873</amazonaws.version>
+    <amazonaws.version>2.15.2</amazonaws.version>
     <junit.version>4.13</junit.version>
     <logback.version>1.2.3</logback.version>
     <mockito.version>3.5.13</mockito.version>
@@ -27,24 +27,23 @@
       <version>${logback.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
-      <version>${amazonaws.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>aws-core</artifactId>
       <version>${amazonaws.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sts</artifactId>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>apache-client</artifactId>
+      <version>${amazonaws.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>${amazonaws.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sts</artifactId>
       <version>${amazonaws.version}</version>
     </dependency>
     <dependency>

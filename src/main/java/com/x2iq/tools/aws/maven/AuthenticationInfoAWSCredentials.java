@@ -16,10 +16,10 @@
 
 package com.x2iq.tools.aws.maven;
 
-import com.amazonaws.auth.AWSCredentials;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
 
-final class AuthenticationInfoAWSCredentials implements AWSCredentials {
+final class AuthenticationInfoAWSCredentials implements AwsCredentials {
 
     private final AuthenticationInfo authenticationInfo;
 
@@ -28,12 +28,12 @@ final class AuthenticationInfoAWSCredentials implements AWSCredentials {
     }
 
     @Override
-    public String getAWSAccessKeyId() {
+    public String accessKeyId() {
         return this.authenticationInfo.getUserName();
     }
 
     @Override
-    public String getAWSSecretKey() {
+    public String secretAccessKey() {
         return this.authenticationInfo.getPassword();
     }
 }

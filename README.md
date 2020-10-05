@@ -10,7 +10,7 @@ Add following to your `project.clj`
 
     :plugins [[com.x2iq.tools/aws-maven "1.4.6"]]
 
-Latest version is 1.4.6 and it uses AWS SDK version 1.11.873
+Latest version is 1.4.6 and it uses AWS SDK version 2.15.2
 
 ## Minimal requirements
 

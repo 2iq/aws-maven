@@ -16,10 +16,15 @@
 
 package com.x2iq.tools.aws.maven;
 
-import com.amazonaws.ClientConfiguration;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.apache.maven.wagon.proxy.ProxyInfoProvider;
 import org.apache.maven.wagon.repository.Repository;
+import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.http.apache.ProxyConfiguration;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 final class S3Utils {
 
@@ -40,16 +45,37 @@ final class S3Utils {
         return sb.toString();
     }
 
-    static ClientConfiguration getClientConfiguration(ProxyInfoProvider proxyInfoProvider) {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
+    static SdkHttpClient getSdkHttpClient(ProxyInfoProvider proxyInfoProvider) {
+        ProxyConfiguration proxyConfig = getProxyConfiguration(proxyInfoProvider);
+
+        return ApacheHttpClient
+            .builder()
+            .proxyConfiguration(proxyConfig)
+            .build();
+    }
+
+    static ProxyConfiguration getProxyConfiguration(ProxyInfoProvider proxyInfoProvider) {
 
         if (proxyInfoProvider != null) {
             ProxyInfo proxyInfo = proxyInfoProvider.getProxyInfo("s3");
             if (proxyInfo != null) {
-                clientConfiguration.withProxyHost(proxyInfo.getHost()).withProxyPort(proxyInfo.getPort());
+                try {
+                    // TODO are type and schema same property?
+                    URI proxy = new URI(proxyInfo.getType(), null, proxyInfo.getHost(), proxyInfo.getPort(), null, null, null);
+
+                    return ProxyConfiguration
+                        .builder()
+                        .endpoint(proxy)
+                        .username(proxyInfo.getUserName())
+                        .password(proxyInfo.getPassword())
+                        .addNonProxyHost(proxyInfo.getNonProxyHosts())  // TODO for multiple hosts
+                        .build();
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException("Invalid proxy configuration " + proxyInfo, e);  // TODO better exception type
+                }
             }
         }
 
-        return clientConfiguration;
+        return ProxyConfiguration.builder().build();
     }
 }
