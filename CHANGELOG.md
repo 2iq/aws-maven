@@ -1,3 +1,17 @@
+# 2.0.0 (05.10.2020)
+
+**Changed:**
+
+- Change min java version [7 -> 8]
+- Switch aws-sdk from version 1.x to 2.x
+- Small cleanups
+
+**Notes:**
+
+This major release because min java version is changed from 7 to 8.
+Java 8 was necessary to switch aws-sdk to version 2.
+There is no change on API or general usage and no need to adjust anything on switching to version 2.0.0.
+
 # 1.4.6 (02.10.2020)
 
 **Changes:**

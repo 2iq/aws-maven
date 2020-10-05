@@ -8,9 +8,9 @@ Wagon also works with Leiningen out of the box.
 
 Add following to your `project.clj`
 
-    :plugins [[com.x2iq.tools/aws-maven "1.4.6"]]
+    :plugins [[com.x2iq.tools/aws-maven "2.0.0"]]
 
-Latest version is 1.4.6 and it uses AWS SDK version 2.15.2
+Latest version is 2.0.0 and it uses AWS SDK version 2.15.2
 
 ## Minimal requirements
 
@@ -38,7 +38,7 @@ To get the wagon add extension to your pom:
       <extension>
         <groupId>com.x2iq.tools</groupId>
         <artifactId>aws-maven</artifactId>
-        <version>1.4.6</version>
+        <version>2.0.0</version>
       </extension>
       ...
     </extensions>
