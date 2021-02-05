@@ -1,3 +1,26 @@
+# 2.0.1 (05.02.2021)
+
+**Bug Fixes:**
+
+- Fix issue that baseDirectory was not used for getting resources (a85bf8d)
+
+**Maintenance:**
+
+- Update all http to https URLs in pom.xml (e349e1d)
+- Add maven-enforcer-plugin (e0ffb68)
+- Manage version of maven plugins in pluginManagement (e764620)
+- Fix some formatting issues in CHANGELOG.md file (450357)
+
+**Dependency updates:**
+
+- Bump awssdk [2.15.2 -> 2.15.77] (3ac3e3b)
+- Bump mockito [3.5.13 -> 3.7.7] (d5fab20)
+- Bump wagon-provider-api [3.4.0 -> 3.4.2] (8e2255c)
+- Bump maven-surefire-plugin [2.16 -> 3.0.0-M5] (8e2255c)
+- Bump maven-resources-plugin [2.6 -> 3.1.0] (8e2255c)
+- Bump maven-deploy-plugin [2.8.1 -> 3.0.0-M1] (8e2255c)
+- Bump maven-compiler-plugin [3.1 -> 3.8.1] (8e2255c)
+
 # 2.0.0 (05.10.2020)
 
 **Changed:**
