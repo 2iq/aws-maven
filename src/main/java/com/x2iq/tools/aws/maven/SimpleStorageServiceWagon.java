@@ -225,7 +225,7 @@ public final class SimpleStorageServiceWagon extends AbstractWagon {
         try {
             in = this.s3.getObject(builder -> builder
                 .bucket(this.bucketName)
-                .key(resourceName));
+                .key(getKey(resourceName)));
             out = new TransferProgressFileOutputStream(destination, transferProgress);
 
             IoUtils.copy(in, out);
