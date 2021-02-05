@@ -5,7 +5,7 @@
   <groupId>com.x2iq.tools</groupId>
   <artifactId>aws-maven</artifactId>
   <packaging>jar</packaging>
-  <version>2.0.1-SNAPSHOT</version>
+  <version>2.0.2-SNAPSHOT</version>
   <name>Amazon Web Services S3 Maven Wagon Support</name>
   <description>Standard Maven wagon support for s3:// urls and IAM roles</description>
 
